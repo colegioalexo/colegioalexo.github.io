@@ -18,3 +18,4 @@ Acesse `http://localhost:4206/`.
 npm run build
 ```
 Os arquivos estáticos empacotados ficam em `dist/colegioalexo/browser/`.
+

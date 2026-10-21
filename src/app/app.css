@@ -559,12 +559,262 @@
   transform: translateY(-2px);
 }
 
-/* ============ HERO VISUAL: PRINT 1 INTERACTIVE CARD ============ */
+/* ============ HERO VISUAL: CARROSSEL AUTOMÁTICO (4 SLIDES) ============ */
 .hero-visual {
   flex: 1;
   max-width: 520px;
   width: 100%;
   min-width: 0;
+}
+
+.showcase-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.showcase-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: rgba(5, 18, 48, 0.9);
+  padding: 6px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 176, 0, 0.4);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+}
+
+.showcase-tab {
+  padding: 9px 6px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s;
+  white-space: nowrap;
+}
+
+.showcase-tab:hover {
+  color: #ffffff;
+}
+
+.showcase-tab.active {
+  background: linear-gradient(135deg, #ffb000, #f59e0b);
+  color: #061539;
+  box-shadow: 0 4px 14px rgba(255, 176, 0, 0.4);
+}
+
+.carousel-stage {
+  position: relative;
+  width: 100%;
+  min-height: 550px;
+  display: flex;
+  align-items: stretch;
+}
+
+.carousel-slide {
+  width: 100%;
+  animation: slideFadeIn 0.38s ease;
+}
+
+@keyframes slideFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid #ffb000;
+  background: rgba(6, 21, 57, 0.88);
+  color: #ffb000;
+  font-size: 1.1rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+
+.carousel-nav-btn.prev {
+  left: 10px;
+}
+
+.carousel-nav-btn.next {
+  right: 10px;
+}
+
+.carousel-nav-btn:hover {
+  background: #ffb000;
+  color: #061539;
+}
+
+.matriculas-poster-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background: #092256;
+  border: 3px solid #ffb000;
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 176, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.matriculas-poster-img {
+  width: 100%;
+  height: 100%;
+  max-height: 575px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Partner Showcase Cards (CNA & Movimenta Libras) */
+.partner-showcase-card {
+  border-radius: 24px;
+  overflow: hidden;
+  background: #092256;
+  border: 3px solid #ffb000;
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.65), 0 0 40px rgba(255, 176, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.partner-card-top {
+  padding: 1.35rem 1.5rem 1rem;
+  text-align: center;
+  background: linear-gradient(180deg, #06173e 0%, #092256 100%);
+  border-bottom: 3px solid #ffb000;
+}
+
+.partner-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 50px;
+  background: rgba(255, 176, 0, 0.18);
+  border: 1px solid rgba(255, 176, 0, 0.5);
+  color: #ffc425;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.partner-card-top h3 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.partner-image-frame {
+  flex: 1;
+  background: #ffffff;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 290px;
+}
+
+.partner-logo-img {
+  max-width: 100%;
+  max-height: 260px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.partner-card-footer {
+  padding: 1.25rem 1.5rem 1.4rem;
+  background: linear-gradient(180deg, #092256 0%, #06173e 100%);
+  border-top: 3px solid #ffb000;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.partner-card-footer p {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+}
+
+.partner-card-footer strong {
+  color: #ffc425;
+}
+
+.partner-cta-btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ffb000, #f59e0b);
+  color: #061539;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.partner-cta-btn:hover {
+  transform: translateY(-2px);
+}
+
+.carousel-dots-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.28);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.carousel-dot.active {
+  width: 28px;
+  border-radius: 10px;
+  background: #ffb000;
+}
+
+.carousel-swipe-hint {
+  font-size: 0.72rem;
+  color: #93c5fd;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 600;
 }
 
 .alexo-flyer-card {
@@ -1330,21 +1580,25 @@
 /* ============ RESERVA DE VAGAS & CONTATO ============ */
 .contact-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.4fr);
   gap: 2.25rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  justify-content: space-between;
+  gap: 1.05rem;
+  height: 100%;
 }
 
 .contact-right-col {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 1.25rem;
+  height: 100%;
 }
 
 .info-card {
@@ -1369,6 +1623,50 @@
 .whatsapp-card {
   border-color: rgba(255, 176, 0, 0.6);
   background: linear-gradient(135deg, rgba(255, 176, 0, 0.16), rgba(9, 34, 86, 0.92));
+}
+
+.secretaria-card {
+  border: 2px solid #ffb000;
+  background: linear-gradient(135deg, rgba(255, 176, 0, 0.22) 0%, rgba(13, 46, 112, 0.96) 100%);
+  box-shadow: 0 12px 30px rgba(255, 176, 0, 0.18);
+}
+
+.secretaria-icon {
+  background: linear-gradient(135deg, #ffb000, #f59e0b);
+  color: #061539;
+  border: none;
+  box-shadow: 0 4px 14px rgba(255, 176, 0, 0.35);
+}
+
+.unit-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.unit-title-row h4 {
+  margin-bottom: 0 !important;
+  color: #ffc425 !important;
+}
+
+.secretaria-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 50px;
+  background: #ffb000;
+  color: #061539;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.highlight-address {
+  color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
 .info-icon {
@@ -1429,12 +1727,19 @@
 .custom-form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.15rem;
-  padding: 2rem;
+  grid-template-rows: auto auto auto 1fr auto;
+  gap: 1.25rem;
+  padding: 2.25rem;
   border-radius: 20px;
   background: rgba(9, 34, 86, 0.9);
   border: 2px solid rgba(255, 176, 0, 0.45);
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+  flex: 1;
+}
+
+.contact-right-col .form-group.full-width textarea {
+  flex: 1;
+  min-height: 145px;
 }
 
 .form-header-row {
@@ -1927,6 +2232,23 @@
 }
 
 @media (max-width: 540px) {
+  .showcase-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .carousel-stage {
+    min-height: 480px;
+  }
+
+  .partner-image-frame {
+    min-height: 220px;
+    padding: 1.15rem;
+  }
+
+  .partner-logo-img {
+    max-height: 195px;
+  }
+
   .btn-call-nav span {
     display: none;
   }

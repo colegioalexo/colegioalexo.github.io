@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, signal } from '@angular/core';
 
 export interface ToastMessage {
   title: string;
@@ -27,16 +27,37 @@ export interface AprovadoDestaque {
   quote: string;
 }
 
+export type HeroSlideId = 'matriculas' | 'reserva2027' | 'cna' | 'ml';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App {
+export class App implements OnInit, OnDestroy {
+  // ============================================================================
+  // NÚMERO CENTRAL DO WHATSAPP QUE RECEBE OS 4 FORMULÁRIOS DO SITE
+  // Formato: 55 (Brasil) + 13 (DDD) + 991460000 (Número sem espaços ou traços)
+  // Para trocar o número no futuro, basta alterar o valor abaixo:
+  readonly whatsappCentralFormularios = '5513991460000';
+  // ============================================================================
+
   menuOpen = false;
   activeModal = signal<'visit' | 'career' | 'complaint' | null>(null);
   selectedResumeName = signal<string>('');
   selectedFormSegment = signal<string>('Educação Infantil');
+
+  // Carrossel Automático do Hero (4 slides: Matrículas, Reserva 2027, CNA, Movimenta Libras)
+  readonly heroSlides: { id: HeroSlideId; label: string }[] = [
+    { id: 'matriculas', label: 'Matrículas' },
+    { id: 'reserva2027', label: 'Reserva 2027' },
+    { id: 'cna', label: 'CNA Inglês' },
+    { id: 'ml', label: 'Libras (ML)' }
+  ];
+  heroCardTab = signal<HeroSlideId>('matriculas');
+  carouselPaused = signal<boolean>(false);
+  private carouselInterval: ReturnType<typeof setInterval> | null = null;
+  private touchStartX = 0;
 
   // Guia Rápido de Etapa Escolar 2027
   simAgeGroup = signal<'2a5' | '6a10' | '11a14' | '15a17' | 'tecnico'>('6a10');
@@ -159,6 +180,80 @@ export class App {
     return map[group] || this.segmentos[1];
   });
 
+  ngOnInit() {
+    this.startCarousel();
+  }
+
+  ngOnDestroy() {
+    this.stopCarousel();
+  }
+
+  private startCarousel() {
+    this.stopCarousel();
+    this.carouselInterval = setInterval(() => {
+      if (!this.carouselPaused()) {
+        this.nextSlide(false);
+      }
+    }, 4500);
+  }
+
+  private stopCarousel() {
+    if (this.carouselInterval) {
+      clearInterval(this.carouselInterval);
+      this.carouselInterval = null;
+    }
+  }
+
+  pauseCarousel() {
+    this.carouselPaused.set(true);
+  }
+
+  resumeCarousel() {
+    this.carouselPaused.set(false);
+  }
+
+  setHeroTab(tab: HeroSlideId) {
+    this.heroCardTab.set(tab);
+    this.startCarousel();
+  }
+
+  nextSlide(resetTimer = true) {
+    const currentIndex = this.heroSlides.findIndex((s) => s.id === this.heroCardTab());
+    const nextIndex = (currentIndex + 1) % this.heroSlides.length;
+    this.heroCardTab.set(this.heroSlides[nextIndex].id);
+    if (resetTimer) {
+      this.startCarousel();
+    }
+  }
+
+  prevSlide() {
+    const currentIndex = this.heroSlides.findIndex((s) => s.id === this.heroCardTab());
+    const prevIndex = (currentIndex - 1 + this.heroSlides.length) % this.heroSlides.length;
+    this.heroCardTab.set(this.heroSlides[prevIndex].id);
+    this.startCarousel();
+  }
+
+  onTouchStart(event: TouchEvent) {
+    this.pauseCarousel();
+    if (event.touches && event.touches.length > 0) {
+      this.touchStartX = event.touches[0].clientX;
+    }
+  }
+
+  onTouchEnd(event: TouchEvent) {
+    if (event.changedTouches && event.changedTouches.length > 0) {
+      const deltaX = event.changedTouches[0].clientX - this.touchStartX;
+      if (Math.abs(deltaX) > 45) {
+        if (deltaX < 0) {
+          this.nextSlide();
+        } else {
+          this.prevSlide();
+        }
+      }
+    }
+    this.resumeCarousel();
+  }
+
   toggleMenu() {
     this.menuOpen = !this.menuOpen;
   }
@@ -200,58 +295,164 @@ export class App {
     }
   }
 
+  private getFieldValue(form: HTMLFormElement, selector: string): string {
+    const el = form.querySelector(selector) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
+    if (!el) return '';
+    if (el.tagName === 'SELECT') {
+      const selectEl = el as HTMLSelectElement;
+      return selectEl.options[selectEl.selectedIndex]?.text || selectEl.value;
+    }
+    return el.value.trim();
+  }
+
+  private enviarParaWhatsAppCentral(textoMensagem: string) {
+    const url = `https://wa.me/${this.whatsappCentralFormularios}?text=${encodeURIComponent(textoMensagem)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+
+  // 1. Funcionalidade: Ficha de Pré-Reserva de Vaga 2027
   onReservationSubmit(event: Event) {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
+    const responsavel = this.getFieldValue(form, '#res-responsavel');
+    const whatsapp = this.getFieldValue(form, '#res-whatsapp');
+    const aluno = this.getFieldValue(form, '#res-aluno');
+    const segmento = this.selectedFormSegment();
+    const turnoMsg = this.getFieldValue(form, '#res-turno') || 'Não informado';
+
     const randomNum = Math.floor(100000 + Math.random() * 900000);
     const protocol = `ALEXO-2027-${randomNum}`;
+
+    const mensagem = [
+      `*PRÉ-RESERVA DE VAGA 2027 - COLÉGIO ALEXO*`,
+      `*Protocolo:* ${protocol}`,
+      `----------------------------------`,
+      `*Responsável:* ${responsavel}`,
+      `*WhatsApp:* ${whatsapp}`,
+      `*Aluno(a):* ${aluno}`,
+      `*Segmento 2027:* ${segmento}`,
+      `*Turno / Mensagem:* ${turnoMsg}`
+    ].join('\n');
+
+    this.enviarParaWhatsAppCentral(mensagem);
+
     this.showNotification({
-      title: 'Pré-Reserva 2027 Registrada com Sucesso!',
-      message: `Recebemos os dados para a Campanha de Reserva de Vagas 2027 (${this.selectedFormSegment()}). Nossa secretaria entrará em contato pelo WhatsApp!`,
+      title: 'Pré-Reserva 2027 Enviada ao WhatsApp!',
+      message: `Abrimos o WhatsApp com os dados da pré-reserva (${segmento}). Basta clicar em enviar na conversa!`,
       type: 'gold',
       protocol
     });
     form.reset();
   }
 
+  // 2. Funcionalidade: Agendar Visita Pedagógica
   onVisitSubmit(event: Event) {
     event.preventDefault();
-    this.closeModal();
+    const form = event.target as HTMLFormElement;
+    const nome = this.getFieldValue(form, '#visit-nome');
+    const telefone = this.getFieldValue(form, '#visit-telefone');
+    const segmento = this.getFieldValue(form, '#visit-segmento');
+    const periodo = this.getFieldValue(form, '#visit-periodo');
+    const obs = this.getFieldValue(form, '#visit-obs') || 'Sem observações';
+
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const protocol = `VISITA-${randomNum}`;
+
+    const mensagem = [
+      `*AGENDAMENTO DE VISITA PEDAGÓGICA - COLÉGIO ALEXO*`,
+      `*Protocolo:* ${protocol}`,
+      `----------------------------------`,
+      `*Responsável:* ${nome}`,
+      `*WhatsApp:* ${telefone}`,
+      `*Segmento de Interesse:* ${segmento}`,
+      `*Melhor Período:* ${periodo}`,
+      `*Observações:* ${obs}`
+    ].join('\n');
+
+    this.closeModal();
+    this.enviarParaWhatsAppCentral(mensagem);
+
     this.showNotification({
-      title: 'Visita Pedagógica Solicitada!',
-      message: 'Será um prazer receber sua família no Colégio Alexo! Confirmaremos o dia e horário pelo seu WhatsApp.',
+      title: 'Solicitação de Visita Enviada!',
+      message: 'Abrimos o WhatsApp com os dados do seu agendamento para confirmação.',
       type: 'success',
       protocol
     });
-    (event.target as HTMLFormElement).reset();
+    form.reset();
   }
 
+  // 3. Funcionalidade: Trabalhe Conosco (Dados + Indicação de Arquivo/Currículo)
   onCareerSubmit(event: Event) {
     event.preventDefault();
+    const form = event.target as HTMLFormElement;
+    const nome = this.getFieldValue(form, '#career-nome');
+    const telefone = this.getFieldValue(form, '#career-telefone');
+    const email = this.getFieldValue(form, '#career-email');
+    const area = this.getFieldValue(form, '#career-area');
+    const resumo = this.getFieldValue(form, '#career-resumo');
+    const arquivoNome = this.selectedResumeName();
+
+    const mensagem = [
+      `*TRABALHE CONOSCO - COLÉGIO ALEXO*`,
+      `----------------------------------`,
+      `*Nome Completo:* ${nome}`,
+      `*WhatsApp:* ${telefone}`,
+      `*E-mail:* ${email}`,
+      `*Área de Atuação:* ${area}`,
+      `*Formação & Experiência:* ${resumo}`,
+      arquivoNome
+        ? `*Currículo em Anexo:* ${arquivoNome} _(anexarei o arquivo nesta conversa)_`
+        : `*Currículo:* Não selecionado no formulário`
+    ].join('\n');
+
     this.closeModal();
+    this.enviarParaWhatsAppCentral(mensagem);
+
     this.showNotification({
-      title: 'Currículo Enviado com Sucesso!',
-      message: 'Obrigado pelo interesse em fazer parte do Colégio Alexo. Seu perfil foi encaminhado à nossa coordenação.',
+      title: 'Dados de Carreira Enviados ao WhatsApp!',
+      message: arquivoNome
+        ? `Envie a mensagem aberta no WhatsApp e anexe o arquivo "${arquivoNome}" na conversa.`
+        : 'Abrimos o WhatsApp com seus dados profissionais prontos para envio.',
       type: 'success'
     });
     this.selectedResumeName.set('');
-    (event.target as HTMLFormElement).reset();
+    form.reset();
   }
 
+  // 4. Funcionalidade: Ouvidoria Escolar
   onComplaintSubmit(event: Event) {
     event.preventDefault();
-    this.closeModal();
+    const form = event.target as HTMLFormElement;
+    const nome = this.getFieldValue(form, '#comp-nome');
+    const telefone = this.getFieldValue(form, '#comp-telefone');
+    const segmento = this.getFieldValue(form, '#comp-segmento');
+    const tipo = this.getFieldValue(form, '#comp-tipo');
+    const detalhes = this.getFieldValue(form, '#comp-detalhes');
+
     const randomNum = Math.floor(100000 + Math.random() * 900000);
     const protocol = `OUV-ALEXO-${randomNum}`;
+
+    const mensagem = [
+      `*OUVIDORIA ESCOLAR - COLÉGIO ALEXO*`,
+      `*Protocolo:* ${protocol}`,
+      `----------------------------------`,
+      `*Nome:* ${nome}`,
+      `*WhatsApp para Retorno:* ${telefone}`,
+      `*Segmento:* ${segmento}`,
+      `*Tipo de Manifestação:* ${tipo}`,
+      `*Mensagem Detalhada:* ${detalhes}`
+    ].join('\n');
+
+    this.closeModal();
+    this.enviarParaWhatsAppCentral(mensagem);
+
     this.showNotification({
       title: 'Manifestação Registrada na Ouvidoria',
-      message: 'Sua mensagem foi encaminhada com prioridade à Direção e Coordenação do Colégio Alexo.',
+      message: 'Abrimos o WhatsApp com seu protocolo e relato prontos para envio à Direção.',
       type: 'warning',
       protocol
     });
-    (event.target as HTMLFormElement).reset();
+    form.reset();
   }
 
   closeToast() {

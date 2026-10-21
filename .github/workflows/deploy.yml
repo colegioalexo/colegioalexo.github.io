@@ -1,11 +1,9 @@
-name: Deploy Angular no GitHub Pages
+name: Deploy Angular na Master
 
 on:
   push:
     branches:
       - master
-      - main
-      - dev
 
 permissions:
   contents: read
@@ -16,7 +14,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Baixar codigo do repositorio
+      - name: Baixar codigo da master
         uses: actions/checkout@v4
 
       - name: Configurar Node.js
@@ -25,7 +23,7 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      - name: Instalar pacotes e gerar build de producao do Angular
+      - name: Instalar pacotes e gerar build do Angular
         run: |
           npm install
           npx ng build --base-href /
